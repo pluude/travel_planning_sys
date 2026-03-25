@@ -1,0 +1,68 @@
+Instrukcija frontend dizaineriui
+
+Frontend dalis yra „frontend“ aplanke.
+
+Failų struktūra:
+
+frontend/
+src/
+App.jsx
+App.css
+pages/
+Login.jsx
+Register.jsx
+Destinations.jsx
+DestinationDetails.jsx
+Questionnaire.jsx
+
+Kur ką redaguoti
+
+Pagrindinis failas
+src/App.jsx
+Atsakingas už puslapių navigaciją (routing).
+Redaguoti tik jei reikia keisti puslapių struktūrą ar maršrutus.
+
+Bendras dizainas
+src/App.css
+Čia daryti:
+
+spalvas
+šriftus
+tarpus (spacing)
+bendrą UI stilių
+
+Puslapiai (čia pagrindinis darbas)
+
+Redaguoti šiuos failus:
+
+src/pages/Login.jsx → prisijungimo puslapis
+src/pages/Register.jsx → registracijos puslapis
+src/pages/Destinations.jsx → krypčių sąrašas
+src/pages/DestinationDetails.jsx → vienos krypties detalės
+src/pages/Questionnaire.jsx → klausimynas + rekomendacijos
+
+Svarbu
+
+Galima keisti:
+
+dizainą
+HTML/JSX struktūrą
+className
+UI elementus (button, input, layout)
+
+Negalima keisti:
+
+fetch(...) užklausų
+API URL (http://127.0.0.1:8000/
+...)
+login/register logikos
+token (localStorage) logikos
+routing logikos be suderinimo
+
+Tikslas
+
+Padaryti gražų ir aiškų UI, nekeičiant veikiančios logikos.
+
+Jeigu reikia
+
+Jeigu reikia keisti funkcionalumą (ne tik dizainą), prieš tai parašyk.
