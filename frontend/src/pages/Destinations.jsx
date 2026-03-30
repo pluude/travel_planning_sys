@@ -16,9 +16,7 @@ function Destinations() {
   useEffect(() => {
     fetch('http://127.0.0.1:8000/api/destinations')
       .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status} ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
         return response.json();
       })
       .then((data) => {
@@ -33,89 +31,170 @@ function Destinations() {
 
   const handleLogout = async () => {
     setAuthMessage('');
-
     try {
       const response = await fetch('http://127.0.0.1:8000/api/logout', {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Logout failed');
-      }
+      if (!response.ok) throw new Error(data.message || 'Logout failed');
 
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setAuthMessage('Logout successful');
 
-      setTimeout(() => {
-        navigate('/login');
-      }, 500);
+      setTimeout(() => navigate('/login'), 500);
     } catch (err) {
       setError(err.message);
     }
   };
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '24px' }}>
-      <h1>Travel Planning System</h1>
+    <div className="app-shell">
+      <div className="page-container">
 
-      <div style={{ marginBottom: '24px' }}>
-        {user ? (
-          <>
-            <p>
-              <strong>Logged in as:</strong> {user.name} ({user.email})
+        <header className="page-header">
+          <div>
+            <span className="eyebrow">✦ Explore travel ideas</span>
+            <h1 className="page-title">Destinations</h1>
+            <p className="page-subtitle">
+              Browse available travel destinations, open full details, and head to the
+              questionnaire for tailored recommendations.
             </p>
-            <button onClick={handleLogout}>Logout</button>
-          </>
-        ) : (
-          <p>
-            <Link to="/login">Login</Link> | <Link to="/register">Register</Link>
-          </p>
+          </div>
+
+          <div className="top-actions">
+            <Link to="/questionnaire" className="btn">Get recommendations →</Link>
+            {!user && (
+              <>
+                <Link to="/login" className="btn-secondary">Login</Link>
+                <Link to="/register" className="btn-ghost">Register</Link>
+              </>
+            )}
+          </div>
+        </header>
+
+        {user && (
+          <section className="profile-bar">
+            <div className="profile-meta">
+              <small>Logged in as</small>
+              <strong>{user.name} — {user.email}</strong>
+            </div>
+            <div className="profile-actions">
+              <button className="btn-secondary" onClick={handleLogout}>Logout</button>
+            </div>
+          </section>
         )}
-      </div>
-      <p style={{ marginBottom: '24px' }}>
-  <Link to="/questionnaire">Go to questionnaire</Link>
-</p>
 
-      {authMessage && <p><strong>{authMessage}</strong></p>}
+        {authMessage && <p className="status-message">✓ {authMessage}</p>}
+        {error && <p className="error-message">✕ {error}</p>}
 
-      <h2>Destinations</h2>
+        <div className="grid-layout">
+          <main className="stack">
+            {loading && <p className="info-chip">⟳ Loading destinations…</p>}
 
-      {loading && <p>Loading destinations...</p>}
-      {error && <p><strong>Error:</strong> {error}</p>}
+            {!loading && !error && destinations.length === 0 && (
+              <div className="empty-state">
+                <span className="empty-state-icon">🗺️</span>
+                No destinations found.
+              </div>
+            )}
 
-      {!loading && !error && destinations.length === 0 && (
-        <p>No destinations found.</p>
-      )}
+            {!loading && !error && destinations.length > 0 && (
+              <div className="destination-grid">
+                {destinations.map((destination) => (
+                  <article
+                    key={destination.id}
+                    className="destination-card"
+                    onClick={() => navigate(`/destination/${destination.id}`)}
+                  >
+                    <div className="card-top">
+                      <div>
+                        <h2 className="card-heading">{destination.name}</h2>
+                        <p className="card-description">{destination.description}</p>
+                      </div>
+                      <span className="badge">{destination.country}</span>
+                    </div>
 
-      {!loading && !error && destinations.map((destination) => (
-        <div
-          key={destination.id}
-          onClick={() => navigate(`/destination/${destination.id}`)}
-          style={{
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            padding: '16px',
-            marginBottom: '16px',
-            textAlign: 'left',
-            cursor: 'pointer'
-          }}
-        >
-          <h3>{destination.name}</h3>
-          <p><strong>Country:</strong> {destination.country}</p>
-          <p><strong>Description:</strong> {destination.description}</p>
-          <p><strong>Trip type:</strong> {destination.trip_type}</p>
-          <p><strong>Season:</strong> {destination.season}</p>
-          <p><strong>Budget:</strong> {destination.budget_level}</p>
-          <p><strong>Duration:</strong> {destination.duration_range}</p>
+                    <div className="tags-row">
+                      <span className="tag">{destination.trip_type}</span>
+                      <span className="tag">{destination.season}</span>
+                      <span className="tag">{destination.budget_level}</span>
+                      <span className="tag">{destination.duration_range}</span>
+                    </div>
+
+                    <hr className="card-divider" />
+
+                    <div className="details-grid">
+                      <div className="detail-pill">
+                        <span>Country</span>
+                        <strong>{destination.country}</strong>
+                      </div>
+                      <div className="detail-pill">
+                        <span>Trip type</span>
+                        <strong>{destination.trip_type}</strong>
+                      </div>
+                      <div className="detail-pill">
+                        <span>Season</span>
+                        <strong>{destination.season}</strong>
+                      </div>
+                      <div className="detail-pill">
+                        <span>Budget</span>
+                        <strong>{destination.budget_level}</strong>
+                      </div>
+                      <div className="detail-pill">
+                        <span>Duration</span>
+                        <strong>{destination.duration_range}</strong>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </main>
+
+          <aside className="stack">
+            <section className="filter-card">
+              <h3>How to use this page</h3>
+              <div className="info-list">
+                <div className="info-list-item">
+                  <div className="hero-point-icon">1</div>
+                  <div>
+                    <strong>Browse the list</strong>
+                    <p>Each card shows trip type, season, budget, and duration at a glance.</p>
+                  </div>
+                </div>
+                <div className="info-list-item">
+                  <div className="hero-point-icon">2</div>
+                  <div>
+                    <strong>Open details</strong>
+                    <p>Click any card to open the full destination details page.</p>
+                  </div>
+                </div>
+                <div className="info-list-item">
+                  <div className="hero-point-icon">3</div>
+                  <div>
+                    <strong>Get recommendations</strong>
+                    <p>Use the questionnaire to receive your top 3 matching destinations.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="info-card">
+              <h3>Quick actions</h3>
+              <div className="button-row">
+                <Link to="/questionnaire" className="btn">Recommendation form</Link>
+                {!user && (
+                  <Link to="/register" className="btn-ghost">Create account</Link>
+                )}
+              </div>
+            </section>
+          </aside>
         </div>
-      ))}
+
+      </div>
     </div>
   );
 }

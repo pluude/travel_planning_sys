@@ -10,9 +10,7 @@ function DestinationDetails() {
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/destinations/${id}`)
       .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status} ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
         return response.json();
       })
       .then((data) => {
@@ -26,30 +24,110 @@ function DestinationDetails() {
   }, [id]);
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '24px', textAlign: 'left' }}>
-      <p><Link to="/">← Back to destinations</Link></p>
+    <div className="app-shell">
+      <div className="page-container">
 
-      {loading && <p>Loading destination...</p>}
-      {error && <p><strong>Error:</strong> {error}</p>}
+        <Link to="/" className="back-link">← Back to destinations</Link>
 
-      {!loading && !error && destination && (
-        <div
-          style={{
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            padding: '16px',
-          }}
-        >
-          <h1>{destination.name}</h1>
-          <p><strong>Country:</strong> {destination.country}</p>
-          <p><strong>Description:</strong> {destination.description}</p>
-          <p><strong>Trip type:</strong> {destination.trip_type}</p>
-          <p><strong>Season:</strong> {destination.season}</p>
-          <p><strong>Budget:</strong> {destination.budget_level}</p>
-          <p><strong>Duration:</strong> {destination.duration_range}</p>
-          <p><strong>Categories:</strong> Not implemented yet</p>
-        </div>
-      )}
+        {loading && <p className="info-chip">⟳ Loading destination…</p>}
+        {error && <p className="error-message">✕ {error}</p>}
+
+        {!loading && !error && destination && (
+          <div className="grid-layout">
+            <main className="stack">
+              <section className="detail-card">
+                <div className="detail-hero">
+                  <div className="detail-copy">
+                    <span className="eyebrow">✦ {destination.country}</span>
+                    <h1 className="page-title" style={{ marginTop: '16px' }}>
+                      {destination.name}
+                    </h1>
+                    <p>{destination.description}</p>
+                  </div>
+                  <span className="badge">{destination.country}</span>
+                </div>
+
+                <div className="tags-row" style={{ marginBottom: '20px' }}>
+                  <span className="tag">{destination.trip_type}</span>
+                  <span className="tag">{destination.season}</span>
+                  <span className="tag">{destination.budget_level}</span>
+                  <span className="tag">{destination.duration_range}</span>
+                </div>
+
+                <hr className="card-divider" />
+
+                <div className="quick-stats">
+                  <div className="quick-stat">
+                    <span>Country</span>
+                    <strong>{destination.country}</strong>
+                  </div>
+                  <div className="quick-stat">
+                    <span>Trip type</span>
+                    <strong>{destination.trip_type}</strong>
+                  </div>
+                  <div className="quick-stat">
+                    <span>Best season</span>
+                    <strong>{destination.season}</strong>
+                  </div>
+                  <div className="quick-stat">
+                    <span>Budget level</span>
+                    <strong>{destination.budget_level}</strong>
+                  </div>
+                  <div className="quick-stat">
+                    <span>Duration</span>
+                    <strong>{destination.duration_range}</strong>
+                  </div>
+                </div>
+              </section>
+            </main>
+
+            <aside className="stack">
+              <section className="info-card">
+                <h3>Plan this trip</h3>
+                <div className="info-list">
+                  <div className="info-list-item">
+                    <div className="hero-point-icon">✈</div>
+                    <div>
+                      <strong>Ready to go?</strong>
+                      <p>Use the questionnaire to see how well this destination matches your preferences.</p>
+                    </div>
+                  </div>
+                  <div className="info-list-item">
+                    <div className="hero-point-icon">◈</div>
+                    <div>
+                      <strong>Budget: {destination.budget_level}</strong>
+                      <p>Plan your expenses around a {destination.budget_level}-budget trip.</p>
+                    </div>
+                  </div>
+                  <div className="info-list-item">
+                    <div className="hero-point-icon">◷</div>
+                    <div>
+                      <strong>Duration: {destination.duration_range}</strong>
+                      <p>Suggested trip length for this destination.</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="info-card">
+                <h3>Actions</h3>
+                <div className="button-row">
+                  <Link to="/questionnaire" className="btn">Get recommendations →</Link>
+                  <Link to="/" className="btn-ghost">All destinations</Link>
+                </div>
+              </section>
+            </aside>
+          </div>
+        )}
+
+        {!loading && !error && !destination && (
+          <div className="empty-state">
+            <span className="empty-state-icon">🗺️</span>
+            Destination not found.
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

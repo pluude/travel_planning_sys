@@ -1,7 +1,35 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+const QUESTIONS = [
+  {
+    key: 'trip_type',
+    label: 'Trip type',
+    icon: '✈',
+    options: ['romantic', 'relaxation', 'adventure', 'sightseeing'],
+  },
+  {
+    key: 'season',
+    label: 'Season',
+    icon: '☀',
+    options: ['spring', 'summer', 'autumn', 'winter'],
+  },
+  {
+    key: 'budget_level',
+    label: 'Budget level',
+    icon: '◈',
+    options: ['low', 'medium', 'high'],
+  },
+  {
+    key: 'duration_range',
+    label: 'Duration',
+    icon: '◷',
+    options: ['3-5 days', '5-7 days', '1 week'],
+  },
+];
 
 function Questionnaire() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     trip_type: '',
     season: '',
@@ -13,12 +41,8 @@ function Questionnaire() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleSelect = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSubmit = async (event) => {
@@ -30,18 +54,12 @@ function Questionnaire() {
     try {
       const response = await fetch('http://127.0.0.1:8000/api/recommendations', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch recommendations');
-      }
+      if (!response.ok) throw new Error(data.message || 'Failed to fetch recommendations');
 
       setRecommendations(data);
     } catch (err) {
@@ -51,113 +69,129 @@ function Questionnaire() {
     }
   };
 
+  const filledCount = Object.values(formData).filter(Boolean).length;
+
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '24px', textAlign: 'left' }}>
-      <p><Link to="/">← Back to destinations</Link></p>
+    <div className="app-shell">
+      <div className="page-container">
 
-      <h1>Travel Questionnaire</h1>
-      <p>Answer these questions to get 3 destination recommendations.</p>
+        <Link to="/" className="back-link">← Back to destinations</Link>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: '32px' }}>
-        <div style={{ marginBottom: '16px' }}>
-          <label>Trip type</label>
-          <br />
-          <select
-            name="trip_type"
-            value={formData.trip_type}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '8px' }}
-          >
-            <option value="">Select trip type</option>
-            <option value="romantic">Romantic</option>
-            <option value="relaxation">Relaxation</option>
-            <option value="adventure">Adventure</option>
-            <option value="sightseeing">Sightseeing</option>
-          </select>
-        </div>
+        <header className="page-header" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '32px' }}>
+          <div>
+            <span className="eyebrow">✦ Find your match</span>
+            <h1 className="page-title" style={{ margin: '16px 0 10px' }}>Travel Questionnaire</h1>
+            <p className="page-subtitle" style={{ margin: '0 auto' }}>
+              Select your preferences below and we'll recommend your top 3 matching destinations.
+            </p>
+          </div>
+        </header>
 
-        <div style={{ marginBottom: '16px' }}>
-          <label>Season</label>
-          <br />
-          <select
-            name="season"
-            value={formData.season}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '8px' }}
-          >
-            <option value="">Select season</option>
-            <option value="spring">Spring</option>
-            <option value="summer">Summer</option>
-            <option value="autumn">Autumn</option>
-            <option value="winter">Winter</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: '16px' }}>
-          <label>Budget level</label>
-          <br />
-          <select
-            name="budget_level"
-            value={formData.budget_level}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '8px' }}
-          >
-            <option value="">Select budget</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: '16px' }}>
-          <label>Duration</label>
-          <br />
-          <select
-            name="duration_range"
-            value={formData.duration_range}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '8px' }}
-          >
-            <option value="">Select duration</option>
-            <option value="3-5 days">3-5 days</option>
-            <option value="5-7 days">5-7 days</option>
-            <option value="1 week">1 week</option>
-          </select>
-        </div>
-
-        <button type="submit" disabled={loading}>
-          {loading ? 'Loading...' : 'Get Recommendations'}
-        </button>
-      </form>
-
-      {error && <p><strong>Error:</strong> {error}</p>}
-
-      {recommendations.length > 0 && (
-        <div>
-          <h2>Top 3 Recommendations</h2>
-
-          {recommendations.map((item, index) => (
-            <div
-              key={item.destination.id}
-              style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '16px',
-                marginBottom: '16px',
-              }}
-            >
-              <h3>#{index + 1} {item.destination.name}</h3>
-              <p><strong>Country:</strong> {item.destination.country}</p>
-              <p><strong>Description:</strong> {item.destination.description}</p>
-              <p><strong>Trip type:</strong> {item.destination.trip_type}</p>
-              <p><strong>Season:</strong> {item.destination.season}</p>
-              <p><strong>Budget:</strong> {item.destination.budget_level}</p>
-              <p><strong>Duration:</strong> {item.destination.duration_range}</p>
-              <p><strong>Match score:</strong> {item.score}</p>
+        <form onSubmit={handleSubmit}>
+          <section className="questionnaire-card">
+            <div className="questionnaire-grid">
+              {QUESTIONS.map((q) => (
+                <div key={q.key} className="question-block">
+                  <label className="question-label">
+                    <span className="question-icon">{q.icon}</span>
+                    {q.label}
+                  </label>
+                  <div className="option-chips">
+                    {q.options.map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        className={`option-chip${formData[q.key] === opt ? ' selected' : ''}`}
+                        onClick={() => handleSelect(q.key, opt)}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+
+            <div className="questionnaire-submit-row">
+              <button className="btn" type="submit" disabled={loading || filledCount < 4}>
+                {loading ? '⟳ Finding matches…' : 'Get recommendations →'}
+              </button>
+              {filledCount < 4 && (
+                <span className="submit-hint">
+                  {4 - filledCount} more selection{4 - filledCount !== 1 ? 's' : ''} needed
+                </span>
+              )}
+            </div>
+          </section>
+        </form>
+
+        {error && <p className="error-message">✕ {error}</p>}
+
+        {recommendations.length > 0 && (
+          <>
+            <div className="section-divider">
+              <div className="section-divider-line" />
+              <span className="section-divider-label">Top 3 recommendations</span>
+              <div className="section-divider-line" />
+            </div>
+
+            <div className="recommendation-grid">
+              {recommendations.map((item, index) => (
+                <article
+                  key={item.destination.id}
+                  className="recommendation-card"
+                  onClick={() => navigate(`/destination/${item.destination.id}`)}
+                >
+                  <div className="recommendation-rank">
+                    #{index + 1} match · score {item.score}
+                  </div>
+
+                  <div className="card-top">
+                    <div>
+                      <h2 className="card-heading">{item.destination.name}</h2>
+                      <p className="card-description">{item.destination.description}</p>
+                    </div>
+                    <span className="score-badge">{item.score} pts</span>
+                  </div>
+
+                  <div className="tags-row">
+                    <span className="tag">{item.destination.trip_type}</span>
+                    <span className="tag">{item.destination.season}</span>
+                    <span className="tag">{item.destination.budget_level}</span>
+                    <span className="tag">{item.destination.duration_range}</span>
+                  </div>
+
+                  <hr className="card-divider" />
+
+                  <div className="details-grid">
+                    <div className="detail-pill">
+                      <span>Country</span>
+                      <strong>{item.destination.country}</strong>
+                    </div>
+                    <div className="detail-pill">
+                      <span>Trip type</span>
+                      <strong>{item.destination.trip_type}</strong>
+                    </div>
+                    <div className="detail-pill">
+                      <span>Season</span>
+                      <strong>{item.destination.season}</strong>
+                    </div>
+                    <div className="detail-pill">
+                      <span>Budget</span>
+                      <strong>{item.destination.budget_level}</strong>
+                    </div>
+                    <div className="detail-pill">
+                      <span>Duration</span>
+                      <strong>{item.destination.duration_range}</strong>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
+        )}
+
+      </div>
     </div>
   );
 }
