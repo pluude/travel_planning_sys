@@ -92,7 +92,7 @@ button, input, select, textarea { font: inherit; }
 button { border: 0; cursor: pointer; }
 h1, h2, h3, p { margin-top: 0; }
 
-/* ─── Layout ───────────────────────────────── */
+
 
 .app-shell {
   min-height: 100vh;
@@ -119,7 +119,7 @@ h1, h2, h3, p { margin-top: 0; }
   gap: 0;
 }
 
-/* ─── Glass surfaces ────────────────────────── */
+
 
 .hero-panel,
 .content-card,
@@ -137,7 +137,7 @@ h1, h2, h3, p { margin-top: 0; }
   box-shadow: var(--shadow-card);
 }
 
-/* ─── Hero panel (auth top banner) ─────────── */
+
 
 .hero-panel {
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
@@ -281,7 +281,6 @@ h1, h2, h3, p { margin-top: 0; }
   line-height: 1.5;
 }
 
-/* ─── Content card ──────────────────────────── */
 
 .content-card,
 .info-card,
@@ -316,7 +315,6 @@ h1, h2, h3, p { margin-top: 0; }
   font-size: 0.93rem;
 }
 
-/* ─── Forms ─────────────────────────────────── */
 
 .form-grid {
   display: grid;
@@ -370,8 +368,6 @@ h1, h2, h3, p { margin-top: 0; }
   background: #0d1f3c;
   color: var(--text);
 }
-
-/* ─── Buttons ───────────────────────────────── */
 
 .button-row {
   display: flex;
@@ -444,7 +440,6 @@ h1, h2, h3, p { margin-top: 0; }
 
 .link-button { padding: 10px 14px; }
 
-/* ─── Status messages ───────────────────────── */
 
 .status-message,
 .error-message,
@@ -481,7 +476,7 @@ h1, h2, h3, p { margin-top: 0; }
   text-align: center;
 }
 
-/* Auth form centering helpers */
+
 .form-grid .button-row {
   justify-content: center;
   margin-top: 8px;
@@ -491,7 +486,7 @@ h1, h2, h3, p { margin-top: 0; }
   width: 100%;
 }
 
-/* ─── Page header ───────────────────────────── */
+
 
 .page-header {
   display: flex;
@@ -517,7 +512,7 @@ h1, h2, h3, p { margin-top: 0; }
   line-height: 1.65;
 }
 
-/* ─── Profile bar ───────────────────────────── */
+
 
 .profile-bar {
   display: flex;
@@ -552,7 +547,7 @@ h1, h2, h3, p { margin-top: 0; }
   gap: 10px;
 }
 
-/* ─── Grid layouts ──────────────────────────── */
+
 
 .grid-layout {
   display: grid;
@@ -567,7 +562,6 @@ h1, h2, h3, p { margin-top: 0; }
   gap: 16px;
 }
 
-/* ─── Cards ─────────────────────────────────── */
 
 .destination-card,
 .recommendation-card {
@@ -608,7 +602,7 @@ h1, h2, h3, p { margin-top: 0; }
   line-height: 1.6;
 }
 
-/* ─── Badges & tags ─────────────────────────── */
+
 
 .badge,
 .score-badge,
@@ -656,7 +650,7 @@ h1, h2, h3, p { margin-top: 0; }
   background: linear-gradient(90deg, transparent, var(--border), transparent);
 }
 
-/* ─── Detail pills ──────────────────────────── */
+
 
 .details-grid { gap: 10px; }
 
@@ -690,7 +684,7 @@ h1, h2, h3, p { margin-top: 0; }
   font-weight: 600;
 }
 
-/* ─── Filter / info cards ───────────────────── */
+
 
 .filter-card,
 .info-card {
@@ -729,7 +723,7 @@ h1, h2, h3, p { margin-top: 0; }
 
 .stack { display: grid; gap: 20px; }
 
-/* ─── Back link ─────────────────────────────── */
+
 
 .back-link {
   display: inline-flex;
@@ -744,7 +738,7 @@ h1, h2, h3, p { margin-top: 0; }
 
 .back-link:hover { color: var(--text); }
 
-/* ─── Detail card ───────────────────────────── */
+
 
 .detail-card { padding: 36px; }
 
@@ -764,7 +758,7 @@ h1, h2, h3, p { margin-top: 0; }
   line-height: 1.7;
 }
 
-/* ─── Recommendations ───────────────────────── */
+
 
 .recommendation-rank {
   font-family: var(--font-display);
@@ -780,7 +774,7 @@ h1, h2, h3, p { margin-top: 0; }
   border: 1px solid var(--border);
 }
 
-/* ─── Questionnaire ─────────────────────────── */
+
 
 .questionnaire-card {
   padding: 40px;
@@ -878,7 +872,7 @@ h1, h2, h3, p { margin-top: 0; }
   font-size: 0.85rem;
 }
 
-/* ─── Empty state ───────────────────────────── */
+
 
 .empty-state {
   text-align: center;
@@ -896,7 +890,7 @@ h1, h2, h3, p { margin-top: 0; }
   opacity: 0.6;
 }
 
-/* ─── Section divider ───────────────────────── */
+
 
 .section-divider {
   display: flex;
@@ -920,7 +914,7 @@ h1, h2, h3, p { margin-top: 0; }
   color: var(--text-muted);
 }
 
-/* ─── Responsive ────────────────────────────── */
+
 
 @media (max-width: 1024px) {
   .grid-layout {
