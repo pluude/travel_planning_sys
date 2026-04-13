@@ -38,6 +38,7 @@ function Questionnaire() {
   });
 
   const [recommendations, setRecommendations] = useState([]);
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -131,7 +132,11 @@ function Questionnaire() {
           <>
             <div className="section-divider">
               <div className="section-divider-line" />
-              <span className="section-divider-label">Top 3 recommendations</span>
+              <span className="section-divider-label">
+                {recommendations[0].score === 0 
+                  ? 'No perfect match — but you might like these' 
+                  : 'Top 3 recommendations'}
+              </span>
               <div className="section-divider-line" />
             </div>
 
@@ -143,7 +148,7 @@ function Questionnaire() {
                   onClick={() => navigate(`/destination/${item.destination.id}`)}
                 >
                   <div className="recommendation-rank">
-                    #{index + 1} match · score {item.score}
+                    #{index + 1} match · {item.score} out of 3 preferences matched
                   </div>
 
                   <div className="card-top">
@@ -151,7 +156,6 @@ function Questionnaire() {
                       <h2 className="card-heading">{item.destination.name}</h2>
                       <p className="card-description">{item.destination.description}</p>
                     </div>
-                    <span className="score-badge">{item.score} pts</span>
                   </div>
 
                   <div className="tags-row">

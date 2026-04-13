@@ -7,6 +7,8 @@ function Destinations() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [authMessage, setAuthMessage] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const user = localStorage.getItem('user')
     ? JSON.parse(localStorage.getItem('user'))
@@ -14,20 +16,22 @@ function Destinations() {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/destinations')
+    setLoading(true);
+    fetch(`http://127.0.0.1:8000/api/destinations?page=${currentPage}`)
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
         return response.json();
       })
       .then((data) => {
-        setDestinations(data);
+        setDestinations(data.data);
+        setTotalPages(data.last_page);
         setLoading(false);
       })
       .catch((err) => {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [currentPage]);
 
   const handleLogout = async () => {
     setAuthMessage('');
@@ -82,6 +86,7 @@ function Destinations() {
               <strong>{user.name} — {user.email}</strong>
             </div>
             <div className="profile-actions">
+              <Link to="/trip-plans" className="btn-secondary">My plans</Link>
               <button className="btn-secondary" onClick={handleLogout}>Logout</button>
             </div>
           </section>
@@ -92,7 +97,15 @@ function Destinations() {
 
         <div className="grid-layout">
           <main className="stack">
-            {loading && <p className="info-chip">⟳ Loading destinations…</p>}
+            {loading && (
+              <div className="empty-state">
+                <span className="empty-state-icon">🌍</span>
+                <p style={{ fontWeight: 600 }}>Loading destinations…</p>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: 6 }}>
+                  This may take a moment on slower connections.
+                </p>
+              </div>
+            )}
 
             {!loading && !error && destinations.length === 0 && (
               <div className="empty-state">
@@ -102,55 +115,79 @@ function Destinations() {
             )}
 
             {!loading && !error && destinations.length > 0 && (
-              <div className="destination-grid">
-                {destinations.map((destination) => (
-                  <article
-                    key={destination.id}
-                    className="destination-card"
-                    onClick={() => navigate(`/destination/${destination.id}`)}
-                  >
-                    <div className="card-top">
-                      <div>
-                        <h2 className="card-heading">{destination.name}</h2>
-                        <p className="card-description">{destination.description}</p>
+              <>
+                <div className="destination-grid">
+                  {destinations.map((destination) => (
+                    <article
+                      key={destination.id}
+                      className="destination-card"
+                      onClick={() => navigate(`/destination/${destination.id}`)}
+                    >
+                      <div className="card-top">
+                        <div>
+                          <h2 className="card-heading">{destination.name}</h2>
+                          <p className="card-description">{destination.description}</p>
+                        </div>
+                        <span className="badge">{destination.country}</span>
                       </div>
-                      <span className="badge">{destination.country}</span>
-                    </div>
 
-                    <div className="tags-row">
-                      <span className="tag">{destination.trip_type}</span>
-                      <span className="tag">{destination.season}</span>
-                      <span className="tag">{destination.budget_level}</span>
-                      <span className="tag">{destination.duration_range}</span>
-                    </div>
+                      <div className="tags-row">
+                        <span className="tag">{destination.trip_type}</span>
+                        <span className="tag">{destination.season}</span>
+                        <span className="tag">{destination.budget_level}</span>
+                        <span className="tag">{destination.duration_range}</span>
+                      </div>
 
-                    <hr className="card-divider" />
+                      <hr className="card-divider" />
 
-                    <div className="details-grid">
-                      <div className="detail-pill">
-                        <span>Country</span>
-                        <strong>{destination.country}</strong>
+                      <div className="details-grid">
+                        <div className="detail-pill">
+                          <span>Country</span>
+                          <strong>{destination.country}</strong>
+                        </div>
+                        <div className="detail-pill">
+                          <span>Trip type</span>
+                          <strong>{destination.trip_type}</strong>
+                        </div>
+                        <div className="detail-pill">
+                          <span>Season</span>
+                          <strong>{destination.season}</strong>
+                        </div>
+                        <div className="detail-pill">
+                          <span>Budget</span>
+                          <strong>{destination.budget_level}</strong>
+                        </div>
+                        <div className="detail-pill">
+                          <span>Duration</span>
+                          <strong>{destination.duration_range}</strong>
+                        </div>
                       </div>
-                      <div className="detail-pill">
-                        <span>Trip type</span>
-                        <strong>{destination.trip_type}</strong>
-                      </div>
-                      <div className="detail-pill">
-                        <span>Season</span>
-                        <strong>{destination.season}</strong>
-                      </div>
-                      <div className="detail-pill">
-                        <span>Budget</span>
-                        <strong>{destination.budget_level}</strong>
-                      </div>
-                      <div className="detail-pill">
-                        <span>Duration</span>
-                        <strong>{destination.duration_range}</strong>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
+                    </article>
+                  ))}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="button-row" style={{ justifyContent: 'center', marginTop: 24 }}>
+                    <button
+                      className="btn-ghost"
+                      onClick={() => setCurrentPage(p => p - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      ← Previous
+                    </button>
+                    <span style={{ padding: '0 16px', color: 'var(--text-soft)', alignSelf: 'center' }}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      className="btn-ghost"
+                      onClick={() => setCurrentPage(p => p + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next →
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </main>
 

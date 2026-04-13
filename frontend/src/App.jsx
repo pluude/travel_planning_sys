@@ -5,6 +5,9 @@ import Register from './pages/Register';
 import Destinations from './pages/Destinations';
 import DestinationDetails from './pages/DestinationDetails';
 import Questionnaire from './pages/Questionnaire';
+import TripPlans from './pages/TripPlans';
+import CreateTripPlan from './pages/CreateTripPlan';
+import TripPlanDetails from './pages/TripPlanDetails';
 
 function App() {
   return (
@@ -15,6 +18,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/destination/:id" element={<DestinationDetails />} />
         <Route path="/questionnaire" element={<Questionnaire />} />
+        <Route path="/trip-plans" element={<TripPlans />} />
+        <Route path="/trip-plans/create" element={<CreateTripPlan />} />
+        <Route path="/trip-plans/:id" element={<TripPlanDetails />} />
       </Routes>
     </BrowserRouter>
   );

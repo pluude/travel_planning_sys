@@ -7,6 +7,8 @@ function DestinationDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const token = localStorage.getItem('token');
+
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/destinations/${id}`)
       .then((response) => {
@@ -89,7 +91,7 @@ function DestinationDetails() {
                     <div className="hero-point-icon">✈</div>
                     <div>
                       <strong>Ready to go?</strong>
-                      <p>Use the questionnaire to see how well this destination matches your preferences.</p>
+                      <p>Create a plan and start adding activities day by day.</p>
                     </div>
                   </div>
                   <div className="info-list-item">
@@ -112,7 +114,16 @@ function DestinationDetails() {
               <section className="info-card">
                 <h3>Actions</h3>
                 <div className="button-row">
-                  <Link to="/questionnaire" className="btn">Get recommendations →</Link>
+                  {token ? (
+                    <Link to={`/trip-plans/create?destination_id=${destination.id}`} className="btn">
+                      Create plan →
+                    </Link>
+                  ) : (
+                    <Link to="/login" className="btn">
+                      Login to create plan →
+                    </Link>
+                  )}
+                  <Link to="/questionnaire" className="btn-secondary">Get recommendations</Link>
                   <Link to="/" className="btn-ghost">All destinations</Link>
                 </div>
               </section>

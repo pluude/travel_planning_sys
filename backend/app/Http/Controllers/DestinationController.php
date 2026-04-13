@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Destination;
+use App\Models\Attraction;
 use Illuminate\Http\Request;
 
 class DestinationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Destination::all());
-    }
+    $perPage = $request->query('per_page', 6);
+    $destinations = Destination::paginate($perPage);
+    return response()->json($destinations);
+     }
 
     public function show($id)
     {
@@ -39,7 +42,6 @@ class DestinationController extends Controller
                 if ($destination->trip_type === $validated['trip_type']) $score++;
                 if ($destination->season === $validated['season']) $score++;
                 if ($destination->budget_level === $validated['budget_level']) $score++;
-                if ($destination->duration_range === $validated['duration_range']) $score++;
 
                 return [
                     'score' => $score,
@@ -52,4 +54,24 @@ class DestinationController extends Controller
 
         return response()->json($topDestinations);
     }
+
+    public function attractions($id, Request $request)
+{
+    $destination = Destination::find($id);
+
+    if (!$destination) {
+        return response()->json(['message' => 'Destination not found'], 404);
+    }
+
+    $budgetLimit = $request->query('budget_limit');
+
+    $attractions = \App\Models\Attraction::where('destination_id', $id)
+        ->when($budgetLimit, function ($query) use ($budgetLimit) {
+            $perDay = $budgetLimit / 5;
+            return $query->where('price_estimate', '<=', $perDay);
+        })
+        ->get();
+
+    return response()->json($attractions);
+}
 }

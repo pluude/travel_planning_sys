@@ -38,27 +38,15 @@ function Login() {
       <div className="auth-layout">
 
         <section className="hero-panel">
-          <span className="eyebrow">✦ Travel Planning</span>
-          <h1 className="hero-title">Plan smarter.<br />Travel better.</h1>
-          <p className="hero-text">
-            Access destinations, compare travel styles, and get personalised
-            recommendations from a clean, modern interface.
-          </p>
-          <div className="hero-stats">
-            <div className="stat-box">
-              <span className="stat-value">Fast</span>
-              <span className="stat-label">Streamlined login</span>
-            </div>
-            <div className="stat-box">
-              <span className="stat-value">Smart</span>
-              <span className="stat-label">AI-matched suggestions</span>
-            </div>
-            <div className="stat-box">
-              <span className="stat-value">Simple</span>
-              <span className="stat-label">Clean navigation</span>
-            </div>
-          </div>
-        </section>
+        <span className="eyebrow">✦ Travel Planning</span>
+        <h1 className="hero-title">Your journey starts here</h1>
+        <p className="hero-text">
+          Plan your perfect trip — discover destinations, build day-by-day itineraries and track your budget.
+        </p>
+        <div className="button-row" style={{ justifyContent: 'center' }}>
+          <Link to="/" className="btn-secondary">Browse destinations →</Link>
+        </div>
+      </section>
 
         <section className="content-card">
           <div className="card-header">
