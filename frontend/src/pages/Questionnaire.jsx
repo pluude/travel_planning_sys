@@ -37,10 +37,14 @@ function Questionnaire() {
     duration_range: '',
   });
 
-  const [recommendations, setRecommendations] = useState([]);
+  const [recommendations, setRecommendations] = useState(
+  JSON.parse(sessionStorage.getItem('recommendations') || '[]')
+);
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+
 
   const handleSelect = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -62,7 +66,8 @@ function Questionnaire() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to fetch recommendations');
 
-      setRecommendations(data);
+     setRecommendations(data);
+      sessionStorage.setItem('recommendations', JSON.stringify(data));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -133,8 +138,8 @@ function Questionnaire() {
             <div className="section-divider">
               <div className="section-divider-line" />
               <span className="section-divider-label">
-                {recommendations[0].score === 0 
-                  ? 'No perfect match — but you might like these' 
+                {recommendations[0].match_percent < 40
+                  ? 'No strong match — but you might like these'
                   : 'Top 3 recommendations'}
               </span>
               <div className="section-divider-line" />
@@ -147,8 +152,18 @@ function Questionnaire() {
                   className="recommendation-card"
                   onClick={() => navigate(`/destination/${item.destination.id}`)}
                 >
+                  {item.destination.image_url && (
+                    <div className="card-media">
+                      <img
+                        src={item.destination.image_url}
+                        alt={item.destination.name}
+                        loading="lazy"
+                        onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
                   <div className="recommendation-rank">
-                    #{index + 1} match · {item.score} out of 3 preferences matched
+                    #{index + 1} match · {item.match_percent}% match
                   </div>
 
                   <div className="card-top">
@@ -158,12 +173,7 @@ function Questionnaire() {
                     </div>
                   </div>
 
-                  <div className="tags-row">
-                    <span className="tag">{item.destination.trip_type}</span>
-                    <span className="tag">{item.destination.season}</span>
-                    <span className="tag">{item.destination.budget_level}</span>
-                    <span className="tag">{item.destination.duration_range}</span>
-                  </div>
+                
 
                   <hr className="card-divider" />
 

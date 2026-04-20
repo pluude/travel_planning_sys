@@ -10,7 +10,10 @@ class ActivityController extends Controller
 {
     public function store(Request $request, $tripDayId)
     {
-        $day = TripDay::find($tripDayId);
+        $userId = $request->user()->id;
+
+        $day = TripDay::whereHas('tripPlan', fn ($q) => $q->where('user_id', $userId))
+            ->find($tripDayId);
 
         if (!$day) {
             return response()->json(['message' => 'Day not found'], 404);
@@ -32,9 +35,12 @@ class ActivityController extends Controller
         return response()->json($activity, 201);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $activity = Activity::find($id);
+        $userId = $request->user()->id;
+
+        $activity = Activity::whereHas('tripDay.tripPlan', fn ($q) => $q->where('user_id', $userId))
+            ->find($id);
 
         if (!$activity) {
             return response()->json(['message' => 'Activity not found'], 404);

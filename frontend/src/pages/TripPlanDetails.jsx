@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { iconForType } from '../constants/attractionIcons';
 
 function TripPlanDetails() {
   const { id } = useParams();
@@ -121,8 +122,11 @@ function TripPlanDetails() {
             <div className="tags-row">
               {attractions.map(attraction => (
                 <div key={attraction.id} className="destination-card" style={{ padding: '12px 16px', cursor: 'default' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                    <div>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                    <div className="attraction-icon" aria-hidden="true" style={{ width: 36, height: 36, fontSize: '1.2rem' }}>
+                      {iconForType(attraction.type)}
+                    </div>
+                    <div style={{ flex: 1 }}>
                       <strong style={{ fontSize: '0.95rem' }}>{attraction.name}</strong>
                       <p style={{ fontSize: '0.82rem', color: 'var(--text-soft)', margin: '4px 0' }}>{attraction.description}</p>
                       <span className="tag">{attraction.type}</span>
@@ -149,14 +153,19 @@ function TripPlanDetails() {
                 <div className="stack" style={{ marginTop: 16, marginBottom: 20 }}>
                   {day.activities.map(activity => (
                     <div key={activity.id} className="profile-bar">
-                      <div className="profile-meta">
-                        <strong>{activity.name}</strong>
-                        <small>
-                          {activity.type && `${activity.type} · `}
-                          {activity.start_time && `${activity.start_time} · `}
-                          {activity.cost > 0 && `€${activity.cost}`}
-                        </small>
-                        {activity.notes && <p style={{ fontSize: '0.85rem', color: 'var(--text-soft)' }}>{activity.notes}</p>}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+                        <div className="attraction-icon" aria-hidden="true" style={{ width: 36, height: 36, fontSize: '1.2rem' }}>
+                          {iconForType(activity.type)}
+                        </div>
+                        <div className="profile-meta">
+                          <strong>{activity.name}</strong>
+                          <small>
+                            {activity.type && `${activity.type} · `}
+                            {activity.start_time && `${activity.start_time} · `}
+                            {activity.cost > 0 && `€${activity.cost}`}
+                          </small>
+                          {activity.notes && <p style={{ fontSize: '0.85rem', color: 'var(--text-soft)' }}>{activity.notes}</p>}
+                        </div>
                       </div>
                       <button
                         className="btn-ghost"
@@ -189,6 +198,7 @@ function TripPlanDetails() {
                         className="option-chip"
                         onClick={() => handleAddSuggested(day.id, attraction)}
                       >
+                        <span aria-hidden="true" style={{ marginRight: 6 }}>{iconForType(attraction.type)}</span>
                         {attraction.name} {attraction.price_estimate > 0 ? `€${attraction.price_estimate}` : '(free)'}
                       </button>
                     ))}

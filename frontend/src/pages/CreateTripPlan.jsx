@@ -21,9 +21,9 @@ function CreateTripPlan() {
   useEffect(() => {
     if (!token) { navigate('/login'); return; }
 
-    fetch('http://127.0.0.1:8000/api/destinations')
-  .then(r => r.json())
-  .then(data => setDestinations(data.data));
+    fetch('http://127.0.0.1:8000/api/destinations?per_page=100')
+      .then(r => r.json())
+      .then(data => setDestinations(data.data));
   }, []);
 
  const handleSubmit = async () => {
@@ -62,7 +62,14 @@ function CreateTripPlan() {
   return (
     <div className="app-shell">
       <div className="page-container">
-        <Link to="/trip-plans" className="back-link">← Back to my plans</Link>
+        <button
+          type="button"
+          className="back-link"
+          onClick={() => navigate(-1)}
+          style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
+        >
+          ← Back
+        </button>
 
         <div className="auth-layout" style={{ maxWidth: 640, margin: '0 auto' }}>
           <div className="hero-panel">

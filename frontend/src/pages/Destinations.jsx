@@ -46,6 +46,7 @@ function Destinations() {
 
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      sessionStorage.removeItem('recommendations');
       setAuthMessage('Logout successful');
 
       setTimeout(() => navigate('/login'), 500);
@@ -123,6 +124,16 @@ function Destinations() {
                       className="destination-card"
                       onClick={() => navigate(`/destination/${destination.id}`)}
                     >
+                      {destination.image_url && (
+                        <div className="card-media">
+                          <img
+                            src={destination.image_url}
+                            alt={destination.name}
+                            loading="lazy"
+                            onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
+                          />
+                        </div>
+                      )}
                       <div className="card-top">
                         <div>
                           <h2 className="card-heading">{destination.name}</h2>
@@ -131,12 +142,6 @@ function Destinations() {
                         <span className="badge">{destination.country}</span>
                       </div>
 
-                      <div className="tags-row">
-                        <span className="tag">{destination.trip_type}</span>
-                        <span className="tag">{destination.season}</span>
-                        <span className="tag">{destination.budget_level}</span>
-                        <span className="tag">{destination.duration_range}</span>
-                      </div>
 
                       <hr className="card-divider" />
 
@@ -162,6 +167,11 @@ function Destinations() {
                           <strong>{destination.duration_range}</strong>
                         </div>
                       </div>
+                      <div style={{ marginTop: 12 }}>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600 }}>
+                        View details →
+                      </span>
+                    </div>
                     </article>
                   ))}
                 </div>

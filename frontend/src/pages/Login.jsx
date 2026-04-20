@@ -27,7 +27,13 @@ function Login() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       setMessage('Login successful');
-      setTimeout(() => navigate('/'), 500);
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect');
+      const destinationId = params.get('destination_id');
+      const redirectUrl = redirect 
+        ? (destinationId ? `${redirect}?destination_id=${destinationId}` : redirect)
+        : '/';
+      setTimeout(() => navigate(redirectUrl), 500);
     } catch (err) {
       setError(err.message);
     }

@@ -321,6 +321,7 @@ h1, h2, h3, p { margin-top: 0; }
   transform: translateY(-2px);
   background: var(--primary-hover);
   box-shadow: 0 8px 24px rgba(42, 95, 173, 0.4);
+  color: white;
 }
 
 .btn:disabled {
@@ -482,6 +483,29 @@ h1, h2, h3, p { margin-top: 0; }
   box-shadow: var(--shadow-md), 0 0 0 3px var(--accent-light);
 }
 
+.card-media {
+  position: relative;
+  width: calc(100% + 48px);
+  margin: -24px -24px 16px -24px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--bg-warm);
+}
+
+.card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--transition);
+}
+
+.destination-card:hover .card-media img,
+.recommendation-card:hover .card-media img {
+  transform: scale(1.04);
+}
+
 .card-top {
   display: flex;
   justify-content: space-between;
@@ -630,6 +654,23 @@ h1, h2, h3, p { margin-top: 0; }
 /* ── DETAIL CARD ── */
 .detail-card { padding: 36px; border-radius: var(--radius-xl); }
 
+.detail-media {
+  position: relative;
+  width: calc(100% + 72px);
+  margin: -36px -36px 28px -36px;
+  aspect-ratio: 21 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  background: var(--bg-warm);
+}
+
+.detail-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .detail-hero {
   display: flex;
   justify-content: space-between;
@@ -640,6 +681,91 @@ h1, h2, h3, p { margin-top: 0; }
 
 .detail-copy { max-width: 680px; }
 .detail-copy p { color: var(--text-soft); font-size: 1rem; line-height: 1.7; }
+
+/* ── ATTRACTION LIST ── */
+.attraction-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.attraction-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  transition: border-color var(--transition), transform var(--transition);
+}
+
+.attraction-item:hover {
+  border-color: var(--accent);
+  transform: translateX(2px);
+}
+
+.attraction-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: var(--accent-light);
+  border-radius: 12px;
+  border: 1px solid rgba(230, 184, 0, 0.3);
+}
+
+.attraction-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.attraction-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.attraction-head strong {
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.attraction-description {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.attraction-price {
+  flex-shrink: 0;
+  text-align: right;
+  padding-left: 12px;
+}
+
+.attraction-price span {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.attraction-price strong {
+  font-size: 1.05rem;
+  color: var(--primary);
+  font-weight: 700;
+}
 
 /* ── RECOMMENDATIONS ── */
 .recommendation-rank {
@@ -797,8 +923,22 @@ h1, h2, h3, p { margin-top: 0; }
   .content-card { padding: 24px 24px 28px; border-radius: 0 0 20px 20px; }
   .filter-card, .info-card, .detail-card, .questionnaire-card { padding: 24px 20px; border-radius: 16px; }
   .destination-card, .recommendation-card, .profile-bar { padding: 18px; }
+  .destination-card .card-media,
+  .recommendation-card .card-media {
+    width: calc(100% + 36px);
+    margin: -18px -18px 14px -18px;
+    border-radius: 16px 16px 0 0;
+  }
+  .detail-media {
+    width: calc(100% + 40px);
+    margin: -24px -20px 20px -20px;
+    border-radius: 16px 16px 0 0;
+    aspect-ratio: 16 / 9;
+  }
   .card-top { flex-direction: column; }
   .detail-pill, .quick-stat { min-width: 100%; }
+  .attraction-item { flex-wrap: wrap; }
+  .attraction-price { width: 100%; text-align: left; padding-left: 0; margin-top: 4px; }
   .questionnaire-card { padding: 24px 20px; }
   .questionnaire-submit-row .btn { min-width: 100%; }
 }

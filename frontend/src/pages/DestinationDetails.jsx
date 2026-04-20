@@ -1,22 +1,31 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { iconForType } from '../constants/attractionIcons';
 
 function DestinationDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [destination, setDestination] = useState(null);
+  const [attractions, setAttractions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/destinations/${id}`)
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
-        return response.json();
-      })
-      .then((data) => {
-        setDestination(data);
+    Promise.all([
+      fetch(`http://127.0.0.1:8000/api/destinations/${id}`).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
+        return r.json();
+      }),
+      fetch(`http://127.0.0.1:8000/api/destinations/${id}/attractions`).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
+        return r.json();
+      }),
+    ])
+      .then(([dest, attrs]) => {
+        setDestination(dest);
+        setAttractions(attrs);
         setLoading(false);
       })
       .catch((err) => {
@@ -29,7 +38,14 @@ function DestinationDetails() {
     <div className="app-shell">
       <div className="page-container">
 
-        <Link to="/" className="back-link">← Back to destinations</Link>
+        <button
+          type="button"
+          className="back-link"
+          onClick={() => navigate(-1)}
+          style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
+        >
+          ← Back
+        </button>
 
         {loading && <p className="info-chip">⟳ Loading destination…</p>}
         {error && <p className="error-message">✕ {error}</p>}
@@ -38,6 +54,15 @@ function DestinationDetails() {
           <div className="grid-layout">
             <main className="stack">
               <section className="detail-card">
+                {destination.image_url && (
+                  <div className="detail-media">
+                    <img
+                      src={destination.image_url}
+                      alt={destination.name}
+                      onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
+                    />
+                  </div>
+                )}
                 <div className="detail-hero">
                   <div className="detail-copy">
                     <span className="eyebrow">✦ {destination.country}</span>
@@ -49,12 +74,7 @@ function DestinationDetails() {
                   <span className="badge">{destination.country}</span>
                 </div>
 
-                <div className="tags-row" style={{ marginBottom: '20px' }}>
-                  <span className="tag">{destination.trip_type}</span>
-                  <span className="tag">{destination.season}</span>
-                  <span className="tag">{destination.budget_level}</span>
-                  <span className="tag">{destination.duration_range}</span>
-                </div>
+              
 
                 <hr className="card-divider" />
 
@@ -81,6 +101,50 @@ function DestinationDetails() {
                   </div>
                 </div>
               </section>
+
+              {attractions.length > 0 && (
+                <section className="detail-card">
+                  <div className="detail-copy" style={{ marginBottom: 20 }}>
+                    <span className="eyebrow">✦ Things to do here</span>
+                    <h2 className="card-heading" style={{ marginTop: 12, fontSize: '1.35rem' }}>
+                      {attractions.length} attraction{attractions.length !== 1 ? 's' : ''} in {destination.name}
+                    </h2>
+                  </div>
+
+                  <ul className="attraction-list">
+                    {attractions.map((attraction) => (
+                      <li key={attraction.id} className="attraction-item">
+                        <div className="attraction-icon" aria-hidden="true">
+                          {iconForType(attraction.type)}
+                        </div>
+                        <div className="attraction-body">
+                          <div className="attraction-head">
+                            <strong>{attraction.name}</strong>
+                            {attraction.type && (
+                              <span className="tag">{attraction.type}</span>
+                            )}
+                          </div>
+                          {attraction.description && (
+                            <p className="attraction-description">{attraction.description}</p>
+                          )}
+                        </div>
+                        {attraction.price_estimate !== null && attraction.price_estimate !== undefined && (
+                          <div className="attraction-price">
+                            {Number(attraction.price_estimate) === 0 ? (
+                              <strong>Free</strong>
+                            ) : (
+                              <>
+                                <span>From</span>
+                                <strong>€{Number(attraction.price_estimate).toFixed(0)}</strong>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
             </main>
 
             <aside className="stack">
@@ -119,7 +183,7 @@ function DestinationDetails() {
                       Create plan →
                     </Link>
                   ) : (
-                    <Link to="/login" className="btn">
+                    <Link to={`/login?redirect=/trip-plans/create&destination_id=${destination.id}`} className="btn">
                       Login to create plan →
                     </Link>
                   )}
