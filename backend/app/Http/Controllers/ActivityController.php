@@ -25,6 +25,7 @@ class ActivityController extends Controller
             'cost' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
             'start_time' => ['nullable', 'date_format:H:i'],
+            'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
         ]);
 
         $activity = Activity::create([

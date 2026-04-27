@@ -70,7 +70,17 @@ function TripPlans() {
         )}
 
         <div className="destination-grid">
-          {plans.map(plan => (
+          {plans.map(plan => {
+            const activitiesCost = (plan.trip_days || []).reduce(
+              (sum, day) => sum + (day.activities || []).reduce((s, a) => s + Number(a.cost || 0), 0),
+              0
+            );
+            const spent = Number(plan.flight_cost || 0) + Number(plan.hotel_cost || 0) + activitiesCost;
+            const limit = plan.budget_limit != null ? Number(plan.budget_limit) : null;
+            const pct = limit && limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
+            const over = limit != null && spent > limit;
+
+            return (
             <article key={plan.id} className="destination-card">
               <div className="card-top">
                 <div>
@@ -95,13 +105,39 @@ function TripPlans() {
                   <span>Days</span>
                   <strong>{plan.trip_days?.length ?? 0}</strong>
                 </div>
-                {plan.budget_limit && (
+                {limit != null && (
                   <div className="detail-pill">
                     <span>Budget</span>
-                    <strong>€{plan.budget_limit}</strong>
+                    <strong>€{limit.toFixed(2)}</strong>
                   </div>
                 )}
+                <div className="detail-pill">
+                  <span>Spent</span>
+                  <strong style={{ color: over ? '#c0392b' : undefined }}>€{spent.toFixed(2)}</strong>
+                </div>
               </div>
+
+              {limit != null && limit > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{
+                    width: '100%',
+                    height: 8,
+                    background: 'rgba(0,0,0,0.08)',
+                    borderRadius: 999,
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      width: `${pct}%`,
+                      height: '100%',
+                      background: over ? '#c0392b' : pct > 85 ? '#e67e22' : '#27ae60',
+                      transition: 'width 0.3s ease',
+                    }} />
+                  </div>
+                  <small style={{ color: 'var(--text-soft)', display: 'block', marginTop: 4 }}>
+                    {over ? `Over by €${(spent - limit).toFixed(2)}` : `€${(limit - spent).toFixed(2)} remaining`}
+                  </small>
+                </div>
+              )}
 
               <hr className="card-divider" />
 
@@ -114,7 +150,8 @@ function TripPlans() {
                 </button>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
 
       </div>

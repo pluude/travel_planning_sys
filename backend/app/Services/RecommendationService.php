@@ -19,7 +19,7 @@ class RecommendationService
 
     public function topMatches(array $preferences, int $limit = 3)
     {
-        $maxScore = array_sum(self::WEIGHTS);
+        $maxScore = array_sum(self::WEIGHTS); //max 4,75
 
         // Dataset is small and scoring uses non-SQL-friendly ordinal distances,
         // so we score in PHP. If destinations grow >>100, narrow with a WHERE first.

@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/trip-plans', [TripPlanController::class, 'index']);
     Route::post('/trip-plans', [TripPlanController::class, 'store']);
     Route::get('/trip-plans/{id}', [TripPlanController::class, 'show']);
+    Route::patch('/trip-plans/{id}', [TripPlanController::class, 'update']);
     Route::delete('/trip-plans/{id}', [TripPlanController::class, 'destroy']);
 
     // Trip Days

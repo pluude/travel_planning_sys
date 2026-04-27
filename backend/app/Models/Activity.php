@@ -13,6 +13,7 @@ class Activity extends Model
         'cost',
         'notes',
         'start_time',
+        'end_time',
     ];
 
     public function tripDay()

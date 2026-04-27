@@ -97,14 +97,65 @@ class AttractionSeeder extends Seeder
             ['destination' => 'Phuket', 'name' => 'Elephant Sanctuary Visit', 'type' => 'nature', 'price_estimate' => 60, 'description' => 'Ethical elephant sanctuary in the jungle.'],
         ];
 
+        $sameAllWeek = fn (string $h) => [
+            'mon' => $h, 'tue' => $h, 'wed' => $h, 'thu' => $h, 'fri' => $h, 'sat' => $h, 'sun' => $h,
+        ];
+
+        // Realistic opening hours by attraction type. Every type has real hours.
+        $hoursByType = [
+            'museum' => [
+                'mon' => 'closed',
+                'tue' => '09:00-17:00', 'wed' => '09:00-17:00', 'thu' => '09:00-17:00', 'fri' => '09:00-17:00',
+                'sat' => '10:00-18:00', 'sun' => '10:00-18:00',
+            ],
+            'landmark' => [
+                'mon' => '09:00-18:00', 'tue' => '09:00-18:00', 'wed' => '09:00-18:00',
+                'thu' => '09:00-18:00', 'fri' => '09:00-18:00',
+                'sat' => '09:00-19:00', 'sun' => '09:00-19:00',
+            ],
+            'experience' => [
+                'mon' => '10:00-14:00', 'tue' => '10:00-14:00', 'wed' => '10:00-14:00',
+                'thu' => '10:00-14:00', 'fri' => '10:00-14:00',
+                'sat' => '10:00-14:00', 'sun' => 'closed',
+            ],
+            'relaxation' => $sameAllWeek('10:00-22:00'),
+            'romantic' => [
+                'mon' => '18:00-21:00', 'tue' => '18:00-21:00', 'wed' => '18:00-21:00',
+                'thu' => '18:00-21:00', 'fri' => '18:00-22:00',
+                'sat' => '18:00-22:00', 'sun' => '18:00-21:00',
+            ],
+            'adventure' => $sameAllWeek('08:00-17:00'),
+            'beach' => $sameAllWeek('06:00-20:00'),
+            'walk' => $sameAllWeek('07:00-22:00'),
+            'nature' => $sameAllWeek('06:00-20:00'),
+        ];
+
+        // Typical visit duration (minutes) by type.
+        $durationByType = [
+            'museum' => 180,
+            'landmark' => 90,
+            'experience' => 150,
+            'relaxation' => 180,
+            'romantic' => 120,
+            'adventure' => 240,
+            'beach' => 180,
+            'walk' => 90,
+            'nature' => 180,
+        ];
+
         foreach ($attractions as $attraction) {
             if (isset($destinations[$attraction['destination']])) {
+                $hours = $hoursByType[$attraction['type']] ?? $sameAllWeek('09:00-18:00');
+                $duration = $durationByType[$attraction['type']] ?? 120;
+
                 DB::table('attractions')->insert([
                     'destination_id' => $destinations[$attraction['destination']]->id,
                     'name' => $attraction['name'],
                     'type' => $attraction['type'],
                     'price_estimate' => $attraction['price_estimate'],
                     'description' => $attraction['description'],
+                    'opening_hours' => json_encode($hours),
+                    'duration_minutes' => $duration,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
