@@ -60,4 +60,99 @@ class DestinationController extends Controller
 
         return response()->json($attractions);
     }
+
+    // ── Admin CRUD: destinations ──────────────────────────────────────────
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate($this->destinationRules());
+        $destination = Destination::create($validated);
+        return response()->json($destination, 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $destination = Destination::find($id);
+        if (!$destination) {
+            return response()->json(['message' => 'Destination not found'], 404);
+        }
+
+        $validated = $request->validate($this->destinationRules(forUpdate: true));
+        $destination->update($validated);
+        return response()->json($destination);
+    }
+
+    public function destroy($id)
+    {
+        $destination = Destination::find($id);
+        if (!$destination) {
+            return response()->json(['message' => 'Destination not found'], 404);
+        }
+        $destination->delete();
+        return response()->json(['message' => 'Destination deleted']);
+    }
+
+    // ── Admin CRUD: attractions ───────────────────────────────────────────
+
+    public function storeAttraction(Request $request, $id)
+    {
+        $destination = Destination::find($id);
+        if (!$destination) {
+            return response()->json(['message' => 'Destination not found'], 404);
+        }
+
+        $validated = $request->validate($this->attractionRules());
+        $attraction = Attraction::create([...$validated, 'destination_id' => $id]);
+        return response()->json($attraction, 201);
+    }
+
+    public function updateAttraction(Request $request, $id)
+    {
+        $attraction = Attraction::find($id);
+        if (!$attraction) {
+            return response()->json(['message' => 'Attraction not found'], 404);
+        }
+
+        $validated = $request->validate($this->attractionRules(forUpdate: true));
+        $attraction->update($validated);
+        return response()->json($attraction);
+    }
+
+    public function destroyAttraction($id)
+    {
+        $attraction = Attraction::find($id);
+        if (!$attraction) {
+            return response()->json(['message' => 'Attraction not found'], 404);
+        }
+        $attraction->delete();
+        return response()->json(['message' => 'Attraction deleted']);
+    }
+
+    private function destinationRules(bool $forUpdate = false): array
+    {
+        $req = $forUpdate ? 'sometimes' : 'required';
+        return [
+            'name' => [$req, 'string', 'max:255'],
+            'country' => [$req, 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'trip_type' => [$req, 'string', 'max:50'],
+            'season' => [$req, 'string', 'max:50'],
+            'budget_level' => [$req, 'string', 'max:50'],
+            'duration_range' => [$req, 'string', 'max:50'],
+            'image_url' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    private function attractionRules(bool $forUpdate = false): array
+    {
+        $req = $forUpdate ? 'sometimes' : 'required';
+        return [
+            'name' => [$req, 'string', 'max:255'],
+            'type' => ['nullable', 'string', 'max:50'],
+            'price_estimate' => ['nullable', 'numeric', 'min:0'],
+            'description' => ['nullable', 'string'],
+            'opening_hours' => ['nullable', 'array'],
+            'duration_minutes' => ['nullable', 'integer', 'min:0'],
+        ];
+    }
 }
