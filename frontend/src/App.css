@@ -942,3 +942,104 @@ h1, h2, h3, p { margin-top: 0; }
   .questionnaire-card { padding: 24px 20px; }
   .questionnaire-submit-row .btn { min-width: 100%; }
 }
+/* ── Print / PDF export ──────────────────────────────────────────────── */
+.print-only { display: none; }
+
+@media print {
+  body {
+    background: #fff !important;
+    color: #000;
+  }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+
+  .app-shell { padding: 0; min-height: auto; }
+  .page-container { width: 100%; max-width: 100%; }
+
+  .filter-card, .detail-card, .info-card, .destination-card, .profile-bar {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    background: #fff !important;
+    page-break-inside: avoid;
+    margin-bottom: 12px;
+  }
+
+  .page-title { font-size: 1.6rem; }
+  .page-subtitle { font-size: 0.95rem; }
+
+  /* Hide interactive UI not meaningful on paper */
+  button, .btn, .btn-ghost, .btn-secondary, input, select, textarea,
+  .option-chips, form, .card-divider {
+    display: none !important;
+  }
+
+  .stack > .detail-card { page-break-after: auto; }
+
+  a { color: #000 !important; text-decoration: none; }
+}
+
+/* ── Admin two-column split ──────────────────────────────────────────── */
+.admin-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .admin-split { grid-template-columns: 1fr; }
+}
+
+.admin-empty-right {
+  padding: 48px 24px;
+  text-align: center;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-soft);
+  background: var(--surface);
+}
+
+/* ── Pagination ──────────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.page-btn:hover:not(:disabled):not(.page-btn-active) {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-btn-active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.page-ellipsis {
+  padding: 0 6px;
+  color: var(--text-muted);
+  user-select: none;
+}

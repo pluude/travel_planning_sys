@@ -1,6 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+function buildPageList(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages = new Set([1, total, current - 1, current, current + 1]);
+  if (current <= 3) { pages.add(2); pages.add(3); pages.add(4); }
+  if (current >= total - 2) { pages.add(total - 3); pages.add(total - 2); pages.add(total - 1); }
+  const sorted = [...pages].filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
+  const result = [];
+  let prev = 0;
+  for (const p of sorted) {
+    if (prev && p - prev > 1) result.push('…');
+    result.push(p);
+    prev = p;
+  }
+  return result;
+}
+
 function Destinations() {
   const navigate = useNavigate();
   const [destinations, setDestinations] = useState([]);
@@ -71,6 +87,10 @@ function Destinations() {
 
           <div className="top-actions">
             <Link to="/questionnaire" className="btn">Get recommendations →</Link>
+            <Link to="/feedback" className="btn-secondary">💬 Feedback</Link>
+            {user?.role === 'admin' && (
+              <Link to="/admin" className="btn-secondary">⚙ Admin</Link>
+            )}
             {!user && (
               <>
                 <Link to="/login" className="btn-secondary">Login</Link>
@@ -177,25 +197,38 @@ function Destinations() {
                 </div>
 
                 {totalPages > 1 && (
-                  <div className="button-row" style={{ justifyContent: 'center', marginTop: 24 }}>
+                  <nav className="pagination" aria-label="Destinations pagination">
                     <button
-                      className="btn-ghost"
+                      className="page-btn"
                       onClick={() => setCurrentPage(p => p - 1)}
                       disabled={currentPage === 1}
+                      aria-label="Previous page"
                     >
-                      ← Previous
+                      ←
                     </button>
-                    <span style={{ padding: '0 16px', color: 'var(--text-soft)', alignSelf: 'center' }}>
-                      Page {currentPage} of {totalPages}
-                    </span>
+                    {buildPageList(currentPage, totalPages).map((item, idx) => (
+                      item === '…' ? (
+                        <span key={`e-${idx}`} className="page-ellipsis">…</span>
+                      ) : (
+                        <button
+                          key={item}
+                          className={`page-btn ${item === currentPage ? 'page-btn-active' : ''}`}
+                          onClick={() => setCurrentPage(item)}
+                          aria-current={item === currentPage ? 'page' : undefined}
+                        >
+                          {item}
+                        </button>
+                      )
+                    ))}
                     <button
-                      className="btn-ghost"
+                      className="page-btn"
                       onClick={() => setCurrentPage(p => p + 1)}
                       disabled={currentPage === totalPages}
+                      aria-label="Next page"
                     >
-                      Next →
+                      →
                     </button>
-                  </div>
+                  </nav>
                 )}
               </>
             )}
