@@ -2,6 +2,38 @@ import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { iconForType } from '../constants/attractionIcons';
 
+function StarDisplay({ value }) {
+  return (
+    <span style={{ color: '#e6b800', letterSpacing: 1 }}>
+      {'★'.repeat(value)}<span style={{ color: '#ddd' }}>{'★'.repeat(5 - value)}</span>
+    </span>
+  );
+}
+
+function StarPicker({ value, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: 4 }}>
+      {[1, 2, 3, 4, 5].map(n => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          style={{
+            background: 'transparent',
+            color: n <= value ? '#e6b800' : '#ccc',
+            fontSize: '1.6rem',
+            lineHeight: 1,
+            padding: 0,
+          }}
+          aria-label={`${n} stars`}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function DestinationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -10,7 +42,13 @@ function DestinationDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [feedback, setFeedback] = useState([]);
+  const [feedbackForm, setFeedbackForm] = useState({ rating: 5, comment: '' });
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+
   const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
 
   useEffect(() => {
     Promise.all([
@@ -33,6 +71,64 @@ function DestinationDetails() {
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    fetch(`http://127.0.0.1:8000/api/feedback?subject_type=destination&destination_id=${id}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setFeedback(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, [id]);
+
+  const submitFeedback = async (e) => {
+    e.preventDefault();
+    setFeedbackMessage('');
+    if (!token) { setFeedbackMessage('✕ Please log in to submit feedback'); return; }
+    if (!feedbackForm.comment.trim()) return;
+
+    setSubmittingFeedback(true);
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          subject_type: 'destination',
+          destination_id: Number(id),
+          rating: Number(feedbackForm.rating),
+          comment: feedbackForm.comment,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const errs = data.errors ? Object.values(data.errors).flat().join(' · ') : (data.message || 'Failed');
+        throw new Error(errs);
+      }
+      setFeedback(prev => [data, ...prev]);
+      setFeedbackForm({ rating: 5, comment: '' });
+      setFeedbackMessage('✓ Thanks for your feedback!');
+      setTimeout(() => setFeedbackMessage(''), 3000);
+    } catch (err) {
+      setFeedbackMessage(`✕ ${err.message}`);
+    } finally {
+      setSubmittingFeedback(false);
+    }
+  };
+
+  const deleteFeedback = async (fid) => {
+    if (!token) return;
+    if (!confirm('Delete this feedback?')) return;
+    const res = await fetch(`http://127.0.0.1:8000/api/feedback/${fid}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) setFeedback(prev => prev.filter(f => f.id !== fid));
+  };
+
+  const averageRating = feedback.length
+    ? (feedback.reduce((sum, f) => sum + f.rating, 0) / feedback.length).toFixed(1)
+    : null;
 
   return (
     <div className="app-shell">
@@ -145,6 +241,85 @@ function DestinationDetails() {
                   </ul>
                 </section>
               )}
+
+              <section className="detail-card">
+                <div className="detail-copy" style={{ marginBottom: 16 }}>
+                  <span className="eyebrow">✦ Travelers' feedback</span>
+                  <h2 className="card-heading" style={{ marginTop: 12, fontSize: '1.35rem' }}>
+                    {feedback.length === 0
+                      ? 'No comments yet'
+                      : `${feedback.length} comment${feedback.length !== 1 ? 's' : ''}`}
+                    {averageRating && (
+                      <span style={{ marginLeft: 12, fontSize: '1rem', color: 'var(--text-soft)' }}>
+                        · avg <StarDisplay value={Math.round(averageRating)} /> {averageRating}/5
+                      </span>
+                    )}
+                  </h2>
+                </div>
+
+                <form onSubmit={submitFeedback} className="form-grid" style={{ marginBottom: 20 }}>
+                  {!user && (
+                    <p className="info-chip">
+                      ℹ <Link to={`/login?redirect=/destination/${id}`}>Log in</Link> to leave feedback for this destination.
+                    </p>
+                  )}
+                  <div className="form-group">
+                    <label className="form-label">Your rating</label>
+                    <StarPicker
+                      value={feedbackForm.rating}
+                      onChange={n => setFeedbackForm(p => ({ ...p, rating: n }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Your comment</label>
+                    <textarea
+                      className="form-input"
+                      rows={3}
+                      placeholder="Share what you loved, tips for fellow travelers, or things to watch out for…"
+                      value={feedbackForm.comment}
+                      onChange={e => setFeedbackForm(p => ({ ...p, comment: e.target.value }))}
+                      maxLength={2000}
+                      disabled={!user}
+                    />
+                  </div>
+                  <div className="button-row">
+                    <button
+                      className="btn"
+                      type="submit"
+                      disabled={!user || submittingFeedback || !feedbackForm.comment.trim()}
+                      style={(!user || submittingFeedback || !feedbackForm.comment.trim())
+                        ? { opacity: 0.5, cursor: 'not-allowed' }
+                        : undefined}
+                    >
+                      {submittingFeedback ? 'Submitting…' : 'Post comment →'}
+                    </button>
+                  </div>
+                  {feedbackMessage && (
+                    <p className={feedbackMessage.startsWith('✓') ? 'status-message' : 'error-message'}>
+                      {feedbackMessage}
+                    </p>
+                  )}
+                </form>
+
+                {feedback.length > 0 && (
+                  <div className="stack">
+                    {feedback.map(f => (
+                      <article key={f.id} className="profile-bar">
+                        <div className="profile-meta" style={{ flex: 1 }}>
+                          <small>
+                            by {f.user?.name || 'Anonymous'} · {new Date(f.created_at).toLocaleDateString()}
+                          </small>
+                          <strong style={{ marginTop: 4 }}><StarDisplay value={f.rating} /></strong>
+                          <p style={{ marginTop: 6, color: 'var(--text-soft)' }}>{f.comment}</p>
+                        </div>
+                        {user && (user.id === f.user_id || user.role === 'admin') && (
+                          <button className="btn-ghost" onClick={() => deleteFeedback(f.id)}>Delete</button>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
             </main>
 
             <aside className="stack">
