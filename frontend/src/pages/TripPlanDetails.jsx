@@ -175,8 +175,68 @@ function TripPlanDetails() {
 
   const handleAddActivity = async (dayId) => {
     setActivityError('');
-    const activity = newActivity[dayId];
-    if (!activity?.name) { setActivityError('Activity name is required'); return; }
+    const activity = newActivity[dayId] || {};
+    if (!activity.name) { setActivityError('Activity name is required'); return; }
+
+    const day = plan?.trip_days?.find(d => d.id === dayId);
+    if (!day) { setActivityError('Day not found'); return; }
+
+    const duration = Number(activity.duration_minutes) || 120;
+    const slotKey = slotByDay[dayId];
+    const pickedSlot = TIME_SLOTS.find(s => s.key === slotKey);
+
+    let startTime = activity.start_time || '';
+    let endTime = activity.end_time || '';
+
+    const existingIntervals = (day.activities || []).map(a => {
+      const s = timeToMinutes(a.start_time);
+      const e = timeToMinutes(a.end_time);
+      return (s != null && e != null) ? { start: s, end: e } : null;
+    });
+
+    if (!startTime) {
+      // No start time entered → auto-find a free slot, like suggested attractions do
+      const window = pickedSlot
+        ? `${pickedSlot.start}-${pickedSlot.end}`
+        : '06:00-22:00';
+      const auto = findEarliestSlot(window, duration, existingIntervals);
+      if (!auto) {
+        setActivityError(
+          pickedSlot
+            ? `No free ${duration}-min slot in ${pickedSlot.label}. Pick another slot or set the time manually.`
+            : `No free ${duration}-min slot during the day. Adjust the duration or set the time manually.`
+        );
+        return;
+      }
+      startTime = minutesToTime(auto.start);
+      endTime = minutesToTime(auto.end);
+    } else if (!endTime) {
+      // Start given, end missing → derive end from duration
+      const startMin = timeToMinutes(startTime);
+      if (startMin != null) endTime = minutesToTime(startMin + duration);
+    }
+
+    // Overlap guard: refuse to schedule on top of another activity
+    const newStart = timeToMinutes(startTime);
+    const newEnd = timeToMinutes(endTime);
+    if (newStart != null && newEnd != null) {
+      const overlapping = existingIntervals.some(iv =>
+        iv && newStart < iv.end && iv.start < newEnd
+      );
+      if (overlapping) {
+        setActivityError('⚠ This time overlaps with another activity on the same day. Adjust the time or duration.');
+        return;
+      }
+    }
+
+    const payload = {
+      name: activity.name,
+      type: activity.type || null,
+      cost: activity.cost ? Number(activity.cost) : 0,
+      notes: activity.notes || null,
+      start_time: startTime || null,
+      end_time: endTime || null,
+    };
 
     try {
       const response = await fetch(`http://127.0.0.1:8000/api/trip-days/${dayId}/activities`, {
@@ -185,7 +245,7 @@ function TripPlanDetails() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(activity),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -321,9 +381,9 @@ function TripPlanDetails() {
   if (!plan) return null;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell printable">
       <div className="page-container">
-        <Link to="/trip-plans" className="back-link">← Back to my plans</Link>
+        <Link to="/trip-plans" className="back-link no-print">← Back to my plans</Link>
 
         <header className="page-header">
           <div>
@@ -333,7 +393,22 @@ function TripPlanDetails() {
               {plan.destination?.name}, {plan.destination?.country} · {plan.start_date} → {plan.end_date}
             </p>
           </div>
+          <div className="top-actions no-print">
+            <button className="btn-secondary" onClick={() => window.print()}>
+              🖨 Print / Export PDF
+            </button>
+          </div>
         </header>
+
+        {/* Print-only summary header */}
+        <div className="print-only" style={{ marginBottom: 16 }}>
+          <p>
+            <strong>Destination:</strong> {plan.destination?.name}, {plan.destination?.country}<br />
+            <strong>Dates:</strong> {plan.start_date} → {plan.end_date}<br />
+            <strong>Total spent:</strong> €{totalSpent.toFixed(2)}
+            {budgetLimit != null && <> / Budget €{budgetLimit.toFixed(2)}</>}
+          </p>
+        </div>
 
         {activityError && <p className="error-message">✕ {activityError}</p>}
 
@@ -694,6 +769,9 @@ function TripPlanDetails() {
                 </div>
               )}
 
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '4px 0 8px' }}>
+                💡 Leave Start/End blank to auto-schedule based on Duration (and the picked time slot above).
+              </p>
               <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
                 <input
                   className="form-input"
@@ -720,6 +798,14 @@ function TripPlanDetails() {
                   placeholder="End"
                   value={newActivity[day.id]?.end_time || ''}
                   onChange={e => setNewActivity(prev => ({ ...prev, [day.id]: { ...prev[day.id], end_time: e.target.value } }))}
+                />
+                <input
+                  className="form-input"
+                  type="number"
+                  min="0"
+                  placeholder="Duration (min)"
+                  value={newActivity[day.id]?.duration_minutes || ''}
+                  onChange={e => setNewActivity(prev => ({ ...prev, [day.id]: { ...prev[day.id], duration_minutes: e.target.value } }))}
                 />
                 <input
                   className="form-input"

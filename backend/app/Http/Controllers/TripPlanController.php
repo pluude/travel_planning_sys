@@ -4,11 +4,43 @@ namespace App\Http\Controllers;
 
 use App\Models\TripPlan;
 use App\Services\TripPlanService;
+use App\Services\PlanComparisonService;
 use Illuminate\Http\Request;
 
 class TripPlanController extends Controller
 {
-    public function __construct(private TripPlanService $tripPlans) {}
+    public function __construct(
+        private TripPlanService $tripPlans,
+        private PlanComparisonService $comparison,
+    ) {}
+
+    public function compare(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = collect(explode(',', $request->query('ids')))
+            ->map(fn ($id) => (int) trim($id))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($ids->count() < 2 || $ids->count() > 3) {
+            return response()->json(['message' => 'Provide 2 or 3 plan ids'], 422);
+        }
+
+        $plans = TripPlan::where('user_id', $request->user()->id)
+            ->whereIn('id', $ids)
+            ->with('destination', 'tripDays.activities')
+            ->get();
+
+        if ($plans->count() !== $ids->count()) {
+            return response()->json(['message' => 'One or more plans not found'], 404);
+        }
+
+        return response()->json($this->comparison->compare($plans));
+    }
 
     public function index(Request $request)
     {

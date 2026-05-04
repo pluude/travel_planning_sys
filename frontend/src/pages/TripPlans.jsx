@@ -6,6 +6,21 @@ function TripPlans() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      if (prev.length >= 3) return prev;
+      return [...prev, id];
+    });
+  };
+
+  const canCompare = selectedIds.length >= 2 && selectedIds.length <= 3;
+  const goCompare = () => {
+    if (!canCompare) return;
+    navigate(`/trip-plans/compare?ids=${selectedIds.join(',')}`);
+  };
 
   const token = localStorage.getItem('token');
   const user = localStorage.getItem('user')
@@ -46,9 +61,30 @@ function TripPlans() {
           </div>
           <div className="top-actions">
             <Link to="/trip-plans/create" className="btn">+ New plan</Link>
+            <Link to="/feedback" className="btn-secondary">💬 Feedback</Link>
             <Link to="/" className="btn-ghost">Browse destinations</Link>
           </div>
         </header>
+
+        {selectedIds.length > 0 && (
+          <section className="profile-bar" style={{ marginBottom: 16, background: 'var(--accent-light)' }}>
+            <div className="profile-meta">
+              <small>Selected for comparison</small>
+              <strong>{selectedIds.length} plan(s) — pick 2 or 3 to compare</strong>
+            </div>
+            <div className="profile-actions">
+              <button
+                className="btn"
+                onClick={goCompare}
+                disabled={!canCompare}
+                style={!canCompare ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+              >
+                Compare →
+              </button>
+              <button className="btn-ghost" onClick={() => setSelectedIds([])}>Clear</button>
+            </div>
+          </section>
+        )}
 
         {user && (
           <section className="profile-bar">
@@ -80,14 +116,28 @@ function TripPlans() {
             const pct = limit && limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
             const over = limit != null && spent > limit;
 
+            const isSelected = selectedIds.includes(plan.id);
             return (
-            <article key={plan.id} className="destination-card">
+            <article
+              key={plan.id}
+              className="destination-card"
+              style={isSelected ? { borderColor: 'var(--primary)', boxShadow: '0 0 0 2px var(--primary-light)' } : undefined}
+            >
               <div className="card-top">
-                <div>
-                  <h2 className="card-heading">{plan.title}</h2>
-                  <p className="card-description">
-                    {plan.destination?.name}, {plan.destination?.country}
-                  </p>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleSelect(plan.id)}
+                    title="Select for comparison"
+                    style={{ marginTop: 6, cursor: 'pointer', width: 18, height: 18 }}
+                  />
+                  <div>
+                    <h2 className="card-heading">{plan.title}</h2>
+                    <p className="card-description">
+                      {plan.destination?.name}, {plan.destination?.country}
+                    </p>
+                  </div>
                 </div>
                 <span className="badge">{plan.status}</span>
               </div>
